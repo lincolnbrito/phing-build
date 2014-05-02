@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ModuloWeb" default="welcome" basedir="." description="Arquivo de deploy">
+	<property name="message" value="Hello World!"/>
+ 	
+    <target name="composer">
+        <composer command="self-update" composer="./composer.phar">
+        </composer>
+    </target>
+
+ 	<target name="welcome">
+ 		<exec command="dir /B" passthru="true" />
+  		<echo msg="${message}"/>
+ 	</target>
+ 	
+ 	<!-- Inicializa o repositório -->
+ 	<target name="git-init">
+ 		<exec 
+ 			command="git init" 
+ 			dir="./src"
+ 			checkreturn="true"
+ 			passthru="true"
+ 			/>
+ 	</target>
+
+ 	<!-- Verifica se é um repositório Git -->
+ 	<target name="is-git-repo" description="Verifica se o projeto atual e' um repositorio Git">
+ 		<exec 
+ 			command="git rev-parse --is-inside-work-tree"
+ 			dir="./src"
+ 			outputProperty="isgitrepo"
+ 			returnProperty="isgitrepo"
+ 			checkreturn="true"
+ 			logoutput="true"
+ 			/> 			
+ 	</target>
+
+ 	<!-- Obtem somente a lista dos últimos arquivos comitados -->
+ 	<target name="deploy-diff" depends="is-git-repo">
+ 		<exec 
+ 			command="git diff-tree --no-commit-id --text --name-only -r master"
+ 			dir="./src" 			
+ 			outputProperty="output" /> 
+ 		<!--<echo msg="Output: ${output}"/>-->
+ 		<!--<php expression="strtoupper('${output}')" returnProperty="output2" />-->
+ 		<php expression="preg_replace('/\n+/', ',', '${output}')" returnProperty="output2" />
+ 		<echo msg="Saida: ${output2}"/>
+ 		<copy todir="./build">
+			<filelist dir="./src" files="${output2}" />
+ 		</copy>
+ 		<!--<foreach list="${output2}" param="abs-fname" delimiter="," target="imprime">
+ 		</foreach>-->
+ 	</target>
+
+	<target name="deploy-all" depends="is-git-repo">
+ 		<exec 
+ 			command="git ls-files"
+ 			dir="./src" 			
+ 			outputProperty="output" /> 		
+ 		<php expression="preg_replace('/\n+/', ',', '${output}')" returnProperty="output2" />
+ 		<echo msg="Saida: ${output2}"/>
+ 		<copy todir="./build">
+			<filelist dir="./src" files="${output2}" />
+ 		</copy>
+ 	</target>
+
+ 	<target name="templates" hidden="true">
+ 		<copy file="./src/database.php.tpl" tofile="./build/database.php" overwrite="true">
+            <filterchain>
+                <replacetokens begintoken="%%" endtoken="%%">
+                    <!-- MySQL TOKENS -->
+                    <token key="dbname" value="BANCO_TESTE" />
+                    <token key="dbhost" value="LOCALHOST" />
+                    <token key="dbport" value="3364" />
+                    <token key="dbuser" value="ROOT" />
+                    <token key="dbpassword" value="PASSWORD" />
+                </replacetokens>
+            </filterchain>
+        </copy>
+ 	</target>
+
+ 	<target name="get-env" description="Obtem o ambiente para efetuar o deploy">
+		<input propertyname="environment" validargs="dev,test,prod">Informe o ambiente para efetuar o deploy:</input>
+ 		<echo msg="=======================================" />
+		<echo msg="AMBIENTE DE DEPLOY: ${environment}"/>
+ 		<echo msg="=======================================" />
+    </target>
+
+ 	<target name="imprime">
+ 		<echo msg="Arquivo: ./${abs-fname}" /> 		
+ 	</target>	
+
+ 	<target name="mysql" description="Conecta ao banco e efetua consulta">
+		<exec 
+ 			command="mysql -h localhost -u root; USE ci_crud; SELECT nome, email FROM pessoas WHERE id=1; \q"
+ 			dir="./src" 			
+ 			outputProperty="output" />
+ 		<echo msg="Saida: ${output}"/> 		
+    </target>
+	
+    <!-- Uma target personalizada criada dentro da pasta do PHING -->
+	<taskdef name="myecho" classname="phing.tasks.my.MyEchoTask" />
+    <target name="myecho">
+		<myecho message="Hello World" />
+    </target>
+
+    <target name="chama-outro-build">
+    	<!-- Do a more complex call -->
+		<phing phingfile="outrobuild.xml">
+			<property name="foo" value="---a-b--c-e-a-fsfsd fsdfsdf" />
+			<property name="anotherone" value="32" />
+		</phing>
+
+		<phing phingfile="outrobuild.xml" target="outro:teste">			
+		</phing>
+    </target>
+</project>

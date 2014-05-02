@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="OutroBuild" default="welcome" basedir="." description="Arquivo de deploy">
+	<property name="message" value="Hello World!"/>
+ 	<target name="welcome">
+  		<echo msg="${message}"/>
+        <echo msg="foo: ${foo}" />
+        <echo msg="anotherone: ${anotherone}" />
+ 	</target>
+    <target name="outro:teste">
+        <echo msg="OLHAAAA!!"/>        
+    </target> 	
+</project>

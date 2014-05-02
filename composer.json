@@ -1,0 +1,14 @@
+{
+    "name": "lincoln.brito/phing",
+    "description": "Automatizando composer com phing",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Lincoln Brito",
+            "email": "lincoln.sbrito@gmail.com"
+        }
+    ],
+    "require": {
+
+    }
+}
